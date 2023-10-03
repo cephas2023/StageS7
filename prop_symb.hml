@@ -1,0 +1,22 @@
+%%%Make sure that we can cannot play another symbol before the end of the game
+with
+  morpion_server:loop(_,_,_,_, _, _,_,_)
+monitor
+  and([_ <- _, morpion_server:loop(_,_,_, _, _, _,_,_)]
+      
+        max(I.
+           and(
+
+           [_ ? {_, {move,{_,Y}}}] 
+           and(
+                [_? {_, {move,{_,X}}} when Y=/=X]ff,
+                
+                [_ ? {_, {move,{_,X}}} when Y=:=X]I
+              
+           )
+       )
+   )
+).          
+            
+
+     

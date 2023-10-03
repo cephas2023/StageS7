@@ -1,0 +1,10 @@
+%Make Sure that all variables are initialized 
+with 
+    morpion_server:loop(_,_,_,_,_,_,_,_)
+monitor
+    and(
+        [_ <- _, morpion_server:loop(Play_pion, Serv_pion, Cur_pion, Incr, O, X, B,L)
+        when Play_pion=/= [] orelse Serv_pion =/= [] orelse Cur_pion=:=[] orelse Incr =/= 0 orelse O=/=0 orelse X =/= 0 orelse B =/= false orelse L =:= []]ff
+
+
+        ).

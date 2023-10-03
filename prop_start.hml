@@ -1,0 +1,12 @@
+with
+  morpion_server:loop(_,_,_, Incr, _, _,_,_)
+monitor
+     and([_ <- _, morpion_server:loop(_,_,_, Incr, _, _,_,_)]
+
+      and([_ ? {_, start}]
+       and(
+                     [_:_ ! {ok, _,  Sco} (when length(Play_pion)<5 orelse length(Serv_pion)<4)]ff
+                             
+      )
+    )
+  ).

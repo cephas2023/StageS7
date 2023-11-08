@@ -1,10 +1,11 @@
 %%%%MORPION
-%-include_lib("rand.hrl").
+
 -module(morpion_server).
--export([start/0,loop/8,pion_update/5,morpion/9]).
+-export([start/0,loop/7,pion_update/5,morpion/8]).
 
 
 start()->
+    %%%%Initalisation des variables
     spawn(?MODULE,loop,[[],[],
         [[P1={0,0},P2={1,0},P3={2,0}],
         [P1={0,0},P4={0,1},P7={0,2}],
@@ -14,16 +15,17 @@ start()->
         [P3={2,0},P5={1,1},P7={0,2}],
         [P4={0,1},P5={1,1},P6={2,1}],
         [P7={0,2},P8={1,2},P9={2,2}]],
-        0,0,0,false,[{0,0},{1,0},{2,0},{0,1},{1,1},{2,1},{0,2},{1,2},{2,2}]]).
+        0,0,false,[{0,0},{1,0},{2,0},
+        {0,1},{1,1},{2,1},{0,2},{1,2},{2,2}]]).
 
         
 
-loop(Play_pion, Serv_pion, Cur_pion, Incr, O, X, B,L) ->
+loop(Play_pion, Serv_pion, Cur_pion, O, X, B,L) ->
     receive
         {Clt, {move,{Position,Symb}}} ->
             
-            Clt ! {ok, {Symb,{O,X}}},
             
+            %%%Correspondance des différentes positions en fonctions des atoms
             if
                 Position == p1 -> P = {0,0};
                 Position == p2 -> P = {1,0};
@@ -36,13 +38,15 @@ loop(Play_pion, Serv_pion, Cur_pion, Incr, O, X, B,L) ->
                 Position == p9 -> P = {2,2}
             end,
 
+            Clt ! {ok, {P,Symb,{O,X}}},
+
             if
                 Symb==x ->
 
                     {NewB,NewL,NewPlayPion, NewServPion} = pion_update(Play_pion, Serv_pion,P,L,B),
                     
                    
-                    io:fwrite("Incr : ~w~n", [Incr]),
+                    %Affichage des variables
                     io:fwrite("X: ~w~n", [NewPlayPion]),
                     io:fwrite("B:~w ~n", [B]),
                     io:fwrite("O: ~w~n", [NewServPion]),
@@ -51,7 +55,7 @@ loop(Play_pion, Serv_pion, Cur_pion, Incr, O, X, B,L) ->
 
                     {NewB,NewL,NewPlayPion, NewServPion} = pion_update(Play_pion, Serv_pion,P,L,B),
                     
-                    io:fwrite("Incr : ~w~n", [Incr]),
+                   %%Affichage des variables
                     io:fwrite("O: ~w~n", [NewPlayPion]),
                     io:fwrite("B:~w ~n", [B]),
                     io:fwrite("X: ~w~n", [NewServPion]),
@@ -59,52 +63,76 @@ loop(Play_pion, Serv_pion, Cur_pion, Incr, O, X, B,L) ->
                 end,
                     
            if
+                %%Premier appel de la fonction morpion
                length(NewPlayPion)>=3-> 
-                    morpion(NewPlayPion, NewServPion, Cur_pion, O, X, B,Incr,NewL,Symb);
+                    morpion(NewPlayPion, NewServPion, Cur_pion, O, X, B,NewL,Symb);
                 
 
                length(NewPlayPion)<3 -> 
-                    loop(NewPlayPion, NewServPion, Cur_pion, Incr + 1, O, X, B,NewL)
+                    loop(NewPlayPion, NewServPion, Cur_pion, O, X, B,NewL)
          end;
-
+        %Fonction stop pour sortie du serveur
         {Clt, stop} ->
             Clt ! {bye}
     end.
 
 
 
-morpion(Play_pion,Serv_pion,Cur_pion,O,X,B,Incr,L,Symb)->
+morpion(Play_pion,Serv_pion,Cur_pion,O,X,B,L,Symb)->
     
     if 
         length(Play_pion)==3->
-             Play=[[lists:nth(1,Play_pion),lists:nth(2,Play_pion),lists:nth(3,Play_pion)]],
-             Serv=[[lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),lists:nth(3,Serv_pion)]];
+        %%%Création de liste contenant des combinaisons de positions 3 pions dans 3 pions
+             Play=[[lists:nth(1,Play_pion),lists:nth(2,Play_pion),
+                lists:nth(3,Play_pion)]],
+             Serv=[[lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),
+                lists:nth(3,Serv_pion)]];
 
         length(Play_pion)==4->
-             Play=[[lists:nth(1,Play_pion),lists:nth(2,Play_pion),lists:nth(3,Play_pion)],
-                [lists:nth(2,Play_pion),lists:nth(3,Play_pion),lists:nth(4,Play_pion)],
-                [lists:nth(1,Play_pion),lists:nth(3,Play_pion),lists:nth(4,Play_pion)],
-                [lists:nth(1,Play_pion),lists:nth(2,Play_pion),lists:nth(4,Play_pion)]],
+        %%%Création de liste contenant des combinaisons de positions 3 pions dans 4 pions
+             Play=[[lists:nth(1,Play_pion),lists:nth(2,Play_pion),
+                lists:nth(3,Play_pion)],
+                [lists:nth(2,Play_pion),lists:nth(3,Play_pion),
+                    lists:nth(4,Play_pion)],
+                [lists:nth(1,Play_pion),lists:nth(3,Play_pion),
+                    lists:nth(4,Play_pion)],
+                [lists:nth(1,Play_pion),lists:nth(2,Play_pion),
+                    lists:nth(4,Play_pion)]],
 
-            Serv=[[lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),lists:nth(3,Serv_pion)],
-                [lists:nth(1,Serv_pion),lists:nth(3,Serv_pion),lists:nth(4,Serv_pion)],
-                [lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),lists:nth(4,Serv_pion)],
-                [lists:nth(2,Serv_pion),lists:nth(3,Serv_pion),lists:nth(4,Serv_pion)]];
+            Serv=[[lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),
+                lists:nth(3,Serv_pion)],
+                [lists:nth(1,Serv_pion),lists:nth(3,Serv_pion),
+                    lists:nth(4,Serv_pion)],
+                [lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),
+                    lists:nth(4,Serv_pion)],
+                [lists:nth(2,Serv_pion),lists:nth(3,Serv_pion),
+                    lists:nth(4,Serv_pion)]];
         
         length(Play_pion)==5->  
-
-                Play=[[lists:nth(1,Play_pion),lists:nth(2,Play_pion),lists:nth(3,Play_pion)],
-                 [lists:nth(1,Play_pion),lists:nth(2,Play_pion),lists:nth(4,Play_pion)],
-                 [lists:nth(1,Play_pion),lists:nth(2,Play_pion),lists:nth(5,Play_pion)],
-                 [lists:nth(1,Play_pion),lists:nth(3,Play_pion),lists:nth(4,Play_pion)],
-                 [lists:nth(1,Play_pion),lists:nth(3,Play_pion),lists:nth(5,Play_pion)],
-                 [lists:nth(1,Play_pion),lists:nth(4,Play_pion),lists:nth(5,Play_pion)],
-                 [lists:nth(2,Play_pion),lists:nth(3,Play_pion),lists:nth(4,Play_pion)],
-                 [lists:nth(2,Play_pion),lists:nth(4,Play_pion),lists:nth(5,Play_pion)],
-                 [lists:nth(3,Play_pion),lists:nth(4,Play_pion),lists:nth(5,Play_pion)],
-                 [lists:nth(3,Play_pion),lists:nth(2,Play_pion),lists:nth(5,Play_pion)]],
+        %%%Création de liste contenant des combinaisons de positions 3 pions dans 5 pions
+                Play=[[lists:nth(1,Play_pion),lists:nth(2,Play_pion),
+                    lists:nth(3,Play_pion)],
+                 [lists:nth(1,Play_pion),lists:nth(2,Play_pion),
+                    lists:nth(4,Play_pion)],
+                 [lists:nth(1,Play_pion),lists:nth(2,Play_pion),
+                    lists:nth(5,Play_pion)],
+                 [lists:nth(1,Play_pion),lists:nth(3,Play_pion),
+                    lists:nth(4,Play_pion)],
+                 [lists:nth(1,Play_pion),lists:nth(3,Play_pion),
+                    lists:nth(5,Play_pion)],
+                 [lists:nth(1,Play_pion),lists:nth(4,Play_pion),
+                    lists:nth(5,Play_pion)],
+                 [lists:nth(2,Play_pion),lists:nth(3,Play_pion),
+                    lists:nth(4,Play_pion)],
+                 [lists:nth(2,Play_pion),lists:nth(4,Play_pion),
+                    lists:nth(5,Play_pion)],
+                 [lists:nth(3,Play_pion),lists:nth(4,Play_pion),
+                    lists:nth(5,Play_pion)],
+                 [lists:nth(3,Play_pion),lists:nth(2,Play_pion),
+                    lists:nth(5,Play_pion)]],
     
-                Serv=[[lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),lists:nth(3,Serv_pion)],
+                Serv=[[lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),
+                    lists:nth(3,Serv_pion)],
                  [lists:nth(1,Serv_pion),lists:nth(3,Serv_pion),lists:nth(4,Serv_pion)],
                  [lists:nth(1,Serv_pion),lists:nth(2,Serv_pion),lists:nth(4,Serv_pion)],
                  [lists:nth(2,Serv_pion),lists:nth(3,Serv_pion),lists:nth(4,Serv_pion)]]
@@ -130,7 +158,7 @@ morpion(Play_pion,Serv_pion,Cur_pion,O,X,B,Incr,L,Symb)->
                 io:fwrite("ServerScore:~w ~n",[NewO])
              end,
 
-            loop([],[],Cur_pion,0,NewO,NewX,B,[{0,0},{1,0},{2,0},{0,1},{1,1},{2,1},{0,2},{1,2},{2,2}]),
+            loop([],[],Cur_pion,NewO,NewX,B,[{0,0},{1,0},{2,0},{0,1},{1,1},{2,1},{0,2},{1,2},{2,2}]),
              
                 true;
             false->
@@ -151,7 +179,7 @@ morpion(Play_pion,Serv_pion,Cur_pion,O,X,B,Incr,L,Symb)->
                             io:fwrite("ServerScore:~w ~n",[NewO])
                         end,
 
-                    loop([],[],Cur_pion,0,NewO,NewX,B,[{0,0},{1,0},{2,0},{0,1},{1,1},{2,1},{0,2},{1,2},{2,2}]),
+                    loop([],[],Cur_pion,NewO,NewX,B,[{0,0},{1,0},{2,0},{0,1},{1,1},{2,1},{0,2},{1,2},{2,2}]),
              
                     true;
                 false->
@@ -159,11 +187,11 @@ morpion(Play_pion,Serv_pion,Cur_pion,O,X,B,Incr,L,Symb)->
                         length(Play_pion)==5->
                             NewO=O,
                             NewX=X,
-                            loop([],[],Cur_pion,0,NewO,NewX,B,[{0,0},{1,0},{2,0},{0,1},{1,1},{2,1},{0,2},{1,2},{2,2}]);
+                            loop([],[],Cur_pion,NewO,NewX,B,[{0,0},{1,0},{2,0},{0,1},{1,1},{2,1},{0,2},{1,2},{2,2}]);
                         length(Play_pion)<5->
                             NewO=O,
                             NewX=X,
-                            loop(Play_pion,Serv_pion,Cur_pion,Incr+1,NewO,NewX,B,L)
+                            loop(Play_pion,Serv_pion,Cur_pion,NewO,NewX,B,L)
                         end
 
                     
@@ -172,11 +200,11 @@ morpion(Play_pion,Serv_pion,Cur_pion,O,X,B,Incr,L,Symb)->
 
 
 
-
+%%%%Mise à jour de la grille de jeu
 pion_update(Play_pion,Serv_pion,Position,L,B)->
     if
         length(Play_pion)<4->
-
+            %%Lorsque la position est déja prise
             case lists:member(Position,Play_pion++Serv_pion) of
                 true->
                     NewPlayPion=Play_pion,
@@ -188,6 +216,7 @@ pion_update(Play_pion,Serv_pion,Position,L,B)->
         
                 
                 false->
+                    %%%Le cas contraire
                     NewPlaypion=Play_pion++[Position],
                     NewL= lists:delete(Position,L),
                     N=rand:uniform(length(NewL)),

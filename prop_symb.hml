@@ -1,22 +1,16 @@
-%%%Make sure that we can cannot play another symbol before the end of the game
 with
-  morpion_server:loop(_,_,_,_, _, _,_,_)
+  morpion_server:loop(_,_,_,_, _, _,_)
 monitor
-  and([_ <- _, morpion_server:loop(_,_,_, _, _, _,_,_)]
-      
-        max(I.
-           and(
+  and([_ <- _, morpion_server:loop(_,_,_, _, _, _,_)]
+        max(X.
 
-           [_ ? {_, {move,{_,Y}}}] 
            and(
-                [_? {_, {move,{_,X}}} when Y=/=X]ff,
-                
-                [_ ? {_, {move,{_,X}}} when Y=:=X]I
-              
-           )
-       )
-   )
-).          
-            
+             [_ ? {_, {move,{_,Symb}}}] 
+                and(
+                  [_:_ ! {ok, {_,_,{_,_}}}]
+                      and(
+                          [_? {_, {move,{_,Symb1}}} when Symb=/=Symb1]ff,
+                          [_ ? {_, {move,{_,Symb1}}} when Symb=:=Symb1] and(
+                          [_:_ ! {ok, {_,_,{_,_}}}]X
 
-     
+                         )))))).

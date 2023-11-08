@@ -1,15 +1,10 @@
-%%Make sure that the score can not be negative
 with
-    morpion_server:loop(_,_,_,_,O,X,_,_)
+    morpion_server:loop(_,_,_,_,_,_,_)
 monitor
-    and([_ <- _, morpion_server:loop(_,_,_,_,O,X,_,_)]
+    and([_ <- _, morpion_server:loop(_,_,_,_,_,_,_)]
         max(Y.
             and([_ ? {_, {move,{_,_}}}] 
                 and(
-                     [_:_ ! {ok, {_,{O,X}}} when X < 0 orelse O < 0]ff,
-                     [_:_ ! {ok, {_,{O,X}}} when X >= 0 orelse O >= 0]Y
-                )
-            )
-        )
-
-    ).
+                     [_:_ ! {ok, {_,_,{O,X}}} when X < 0 orelse O < 0]ff,
+                     [_:_ ! {ok, {_,_,{O,X}}} when X >= 0 orelse O >= 0]Y
+                )))).
